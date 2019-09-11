@@ -5,8 +5,9 @@ import com.opinta.entity.Client;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.stereotype.Service;
 
-
+@Service
 @Mapper(componentModel = "spring")
 public interface ClientMapper extends BaseMapper<ClientDto, Client> {
     

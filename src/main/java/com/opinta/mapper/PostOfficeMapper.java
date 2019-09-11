@@ -5,7 +5,9 @@ import com.opinta.entity.PostOffice;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.stereotype.Service;
 
+@Service
 @Mapper(componentModel = "spring")
 public interface PostOfficeMapper extends BaseMapper<PostOfficeDto, PostOffice> {
 

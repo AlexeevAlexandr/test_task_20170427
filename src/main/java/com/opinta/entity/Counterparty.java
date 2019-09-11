@@ -1,13 +1,13 @@
 package com.opinta.entity;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 
 /**

@@ -1,13 +1,8 @@
 package com.opinta.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import javax.persistence.*;
 
 @Entity
 @Data

@@ -103,6 +103,7 @@ public class ShipmentControllerIT extends BaseControllerIT {
         JSONObject jsonObject = testHelper.getJsonObjectFromFile("json/shipment.json");
         jsonObject.put("senderId", (int) testHelper.createClient().getId());
         jsonObject.put("recipientId", (int) testHelper.createClient().getId());
+        jsonObject.put("price", 45);
         String expectedJson = jsonObject.toString();
 
         given().
@@ -117,8 +118,6 @@ public class ShipmentControllerIT extends BaseControllerIT {
         ShipmentDto shipmentDto = shipmentMapper.toDto(shipmentService.getEntityById(shipmentId));
         ObjectMapper mapper = new ObjectMapper();
         String actualJson = mapper.writeValueAsString(shipmentDto);
-
-        jsonObject.put("price", 45);
         expectedJson = jsonObject.toString();
 
         JSONAssert.assertEquals(expectedJson, actualJson, false);

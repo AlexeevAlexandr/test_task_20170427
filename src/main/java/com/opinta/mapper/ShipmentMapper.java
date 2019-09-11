@@ -6,7 +6,9 @@ import com.opinta.entity.Shipment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.stereotype.Service;
 
+@Service
 @Mapper(componentModel = "spring")
 public interface ShipmentMapper extends BaseMapper<ShipmentDto, Shipment> {
 

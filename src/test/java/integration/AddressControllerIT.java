@@ -13,10 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static java.lang.Integer.MIN_VALUE;
-
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class AddressControllerIT extends BaseControllerIT {

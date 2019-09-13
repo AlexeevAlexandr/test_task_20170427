@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TestHelper {
@@ -39,8 +41,10 @@ public class TestHelper {
     }
 
     public Shipment createShipment() {
-        Shipment shipment = new Shipment(createClient(), createClient(),
-                DeliveryType.D2D, 1.0F, 1.0F, new BigDecimal(200), new BigDecimal(30), new BigDecimal(35.2));
+        List<Parcel> parcelList = getListParcel();
+        float price = (float) parcelList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        Shipment shipment = new Shipment(createClient(), createClient(), DeliveryType.D2D,
+                new BigDecimal(String.valueOf(price)), new BigDecimal(35.2), parcelList);
         return shipmentService.saveEntity(shipment);
     }
 
@@ -90,7 +94,35 @@ public class TestHelper {
         return getJsonObjectFromFile(filePath).toString();
     }
 
-    public File getFileFromResources(String path) {
+    private File getFileFromResources(String path) {
         return new File(getClass().getClassLoader().getResource(path).getFile());
+    }
+
+    private List<ParcelItem> getListParcelItem(){
+        List<ParcelItem> parcelItemList = new ArrayList<>();
+        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        parcelItemList.add(parcelItem);
+        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
+        parcelItemList.add(parcelItem);
+        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
+        parcelItemList.add(parcelItem);
+        return parcelItemList;
+    }
+
+    public List<Parcel> getListParcel(){
+        List<Parcel> parcelList = new ArrayList<>();
+        List<ParcelItem> parcelItemList = getListParcelItem();
+        float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
+        float price = (float) parcelItemList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        Parcel parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        return parcelList;
     }
 }

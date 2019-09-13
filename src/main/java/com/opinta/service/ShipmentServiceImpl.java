@@ -1,6 +1,7 @@
 package com.opinta.service;
 
 import com.opinta.dao.ClientDao;
+import com.opinta.dao.ParcelDao;
 import com.opinta.dao.ShipmentDao;
 import com.opinta.dao.TariffGridDao;
 import com.opinta.dto.ShipmentDto;
@@ -23,15 +24,17 @@ public class ShipmentServiceImpl implements ShipmentService {
     private final ShipmentDao shipmentDao;
     private final ClientDao clientDao;
     private final TariffGridDao tariffGridDao;
+    private final ParcelDao parcelDao;
     private final ShipmentMapper shipmentMapper;
     private final BarcodeInnerNumberService barcodeInnerNumberService;
 
     @Autowired
-    public ShipmentServiceImpl(ShipmentDao shipmentDao, ClientDao clientDao, TariffGridDao tariffGridDao,
+    public ShipmentServiceImpl(ShipmentDao shipmentDao, ClientDao clientDao, TariffGridDao tariffGridDao, ParcelDao parcelDao,
                                ShipmentMapper shipmentMapper, BarcodeInnerNumberService barcodeInnerNumberService) {
         this.shipmentDao = shipmentDao;
         this.clientDao = clientDao;
         this.tariffGridDao = tariffGridDao;
+        this.parcelDao = parcelDao;
         this.shipmentMapper = shipmentMapper;
         this.barcodeInnerNumberService = barcodeInnerNumberService;
     }
@@ -91,7 +94,7 @@ public class ShipmentServiceImpl implements ShipmentService {
         postcodePool.getBarcodeInnerNumbers().add(newBarcode);
         Shipment shipment = shipmentMapper.toEntity(shipmentDto);
         shipment.setBarcode(newBarcode);
-        log.info("Saving shipment with assigned barcode", shipmentMapper.toDto(shipment));
+        log.info("Saving shipment with assigned barcode {}", shipmentMapper.toDto(shipment));
 
         shipment.setSender(clientDao.getById(shipment.getSender().getId()));
         shipment.setRecipient(clientDao.getById(shipment.getRecipient().getId()));
@@ -148,13 +151,16 @@ public class ShipmentServiceImpl implements ShipmentService {
         }
 
         TariffGrid tariffGrid = tariffGridDao.getLast(w2wVariation);
-        if (shipment.getWeight() < tariffGrid.getWeight() &&
-                shipment.getLength() < tariffGrid.getLength()) {
-            tariffGrid = tariffGridDao.getByDimension(shipment.getWeight(), shipment.getLength(), w2wVariation);
+        List<Parcel> shipmentList = parcelDao.getAll();
+        float shipmentWeight = (float) shipmentList.stream().mapToDouble(Parcel::getWeight).sum();
+        float shipmentLength = (float) shipmentList.stream().mapToDouble(Parcel::getLength).sum();
+        if (shipmentWeight < tariffGrid.getWeight() &&
+                shipmentLength < tariffGrid.getLength()) {
+            tariffGrid = tariffGridDao.getByDimension(shipmentWeight, shipmentLength, w2wVariation);
         }
 
         log.info("TariffGrid for weight {} per length {} and type {}: {}",
-                shipment.getWeight(), shipment.getLength(), w2wVariation, tariffGrid);
+                shipmentWeight, shipmentLength, w2wVariation, tariffGrid);
 
         if (tariffGrid == null) {
             return BigDecimal.ZERO;

@@ -1,49 +1,17 @@
 package com.opinta.temp;
 
-import com.opinta.dto.PostOfficeDto;
-import com.opinta.dto.ShipmentDto;
-import com.opinta.entity.Counterparty;
-import com.opinta.mapper.ShipmentTrackingDetailMapper;
-import com.opinta.entity.ShipmentStatus;
-import com.opinta.entity.ShipmentTrackingDetail;
-import com.opinta.entity.TariffGrid;
-import com.opinta.entity.W2wVariation;
-import com.opinta.service.ShipmentTrackingDetailService;
-import com.opinta.service.TariffGridService;
+import com.opinta.dto.*;
+import com.opinta.entity.*;
+import com.opinta.mapper.*;
+import com.opinta.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import com.opinta.dto.AddressDto;
-import com.opinta.dto.BarcodeInnerNumberDto;
-import com.opinta.dto.PostcodePoolDto;
-import com.opinta.dto.CounterpartyDto;
-import com.opinta.mapper.AddressMapper;
-import com.opinta.mapper.BarcodeInnerNumberMapper;
-import com.opinta.mapper.ClientMapper;
-import com.opinta.mapper.PostOfficeMapper;
-import com.opinta.mapper.PostcodePoolMapper;
-import com.opinta.mapper.ShipmentMapper;
-import com.opinta.mapper.CounterpartyMapper;
-import com.opinta.entity.Address;
-import com.opinta.entity.BarcodeInnerNumber;
-import com.opinta.entity.Client;
-import com.opinta.entity.DeliveryType;
-import com.opinta.entity.PostOffice;
-import com.opinta.entity.PostcodePool;
-import com.opinta.entity.Shipment;
-import com.opinta.service.AddressService;
-import com.opinta.service.BarcodeInnerNumberService;
-import com.opinta.service.ClientService;
-import com.opinta.service.PostOfficeService;
-import com.opinta.service.PostcodePoolService;
-import com.opinta.service.ShipmentService;
-import com.opinta.service.CounterpartyService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import static com.opinta.entity.BarcodeStatus.RESERVED;
 import static com.opinta.entity.BarcodeStatus.USED;
@@ -59,12 +27,16 @@ public class InitDbService {
     private PostOfficeService postOfficeService;
     private ShipmentTrackingDetailService shipmentTrackingDetailService;
     private TariffGridService tariffGridService;
+    private ParcelItemService parcelItemService;
+    private ParcelService parcelService;
 
     private ClientMapper clientMapper;
     private AddressMapper addressMapper;
     private PostcodePoolMapper postcodePoolMapper;
     private BarcodeInnerNumberMapper barcodeInnerNumberMapper;
     private ShipmentMapper shipmentMapper;
+    private ParcelMapper parcelMapper;
+    private ParcelItemMapper parcelItemMapper;
     private PostOfficeMapper postOfficeMapper;
     private CounterpartyMapper counterpartyMapper;
     private ShipmentTrackingDetailMapper shipmentTrackingDetailMapper;
@@ -75,9 +47,10 @@ public class InitDbService {
             ClientService clientService, AddressService addressService, ShipmentService shipmentService,
             CounterpartyService counterpartyService, PostOfficeService postOfficeService,
             ShipmentTrackingDetailService shipmentTrackingDetailService, TariffGridService tariffGridService,
+            ParcelItemService parcelItemService, ParcelService parcelService,
             ClientMapper clientMapper, AddressMapper addressMapper, PostcodePoolMapper postcodePoolMapper,
-            BarcodeInnerNumberMapper barcodeInnerNumberMapper, ShipmentMapper shipmentMapper,
-            PostOfficeMapper postOfficeMapper, CounterpartyMapper counterpartyMapper,
+            BarcodeInnerNumberMapper barcodeInnerNumberMapper, ShipmentMapper shipmentMapper, ParcelMapper parcelMapper,
+            PostOfficeMapper postOfficeMapper, CounterpartyMapper counterpartyMapper, ParcelItemMapper parcelItemMapper,
             ShipmentTrackingDetailMapper shipmentTrackingDetailMapper) {
         this.barcodeInnerNumberService = barcodeInnerNumberService;
         this.postcodePoolService = postcodePoolService;
@@ -88,11 +61,15 @@ public class InitDbService {
         this.postOfficeService = postOfficeService;
         this.shipmentTrackingDetailService = shipmentTrackingDetailService;
         this.tariffGridService = tariffGridService;
+        this.parcelItemService = parcelItemService;
+        this.parcelService = parcelService;
         this.clientMapper = clientMapper;
         this.addressMapper = addressMapper;
         this.postcodePoolMapper = postcodePoolMapper;
         this.barcodeInnerNumberMapper = barcodeInnerNumberMapper;
         this.shipmentMapper = shipmentMapper;
+        this.parcelMapper = parcelMapper;
+        this.parcelItemMapper = parcelItemMapper;
         this.postOfficeMapper = postOfficeMapper;
         this.counterpartyMapper = counterpartyMapper;
         this.shipmentTrackingDetailMapper = shipmentTrackingDetailMapper;
@@ -145,14 +122,16 @@ public class InitDbService {
 
         // create Shipment
         List<ShipmentDto> shipmentsSaved = new ArrayList<>();
-        Shipment shipment = new Shipment(clientsSaved.get(0), clientsSaved.get(1), DeliveryType.W2W, 1, 1,
-                new BigDecimal("12.5"), new BigDecimal("2.5"), new BigDecimal("15"));
+        List<Parcel> parcelList = createParcel();
+        float price = (float) parcelList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        Shipment shipment = new Shipment(clientsSaved.get(0), clientsSaved.get(1), DeliveryType.W2W,
+                new BigDecimal(String.valueOf(price)), new BigDecimal("15"), parcelList);
         shipmentsSaved.add(shipmentService.save(shipmentMapper.toDto(shipment)));
-        shipment = new Shipment(clientsSaved.get(0), clientsSaved.get(0), DeliveryType.W2D, 2, 2,
-                new BigDecimal("19.5"), new BigDecimal("0.5"), new BigDecimal("20.5"));
+        shipment = new Shipment(clientsSaved.get(0), clientsSaved.get(0), DeliveryType.W2D,
+                new BigDecimal(String.valueOf(price)), new BigDecimal("20.5"), parcelList);
         shipmentsSaved.add(shipmentService.save(shipmentMapper.toDto(shipment)));
-        shipment = new Shipment(clientsSaved.get(1), clientsSaved.get(0), DeliveryType.D2D, 3, 3,
-                new BigDecimal("8.5"), new BigDecimal("2.25"), new BigDecimal("13.5"));
+        shipment = new Shipment(clientsSaved.get(1), clientsSaved.get(0), DeliveryType.D2D,
+                new BigDecimal(String.valueOf(price)), new BigDecimal("13.5"), parcelList);
         shipmentsSaved.add(shipmentService.save(shipmentMapper.toDto(shipment)));
 
         // create PostOffice
@@ -209,5 +188,32 @@ public class InitDbService {
         tariffGrids.add(new TariffGrid(30f, 70f, W2wVariation.COUNTRY, 60f));
 
         tariffGrids.forEach(tariffGridService::save);
+    }
+
+    private List<ParcelItem> createParcelItem(){
+        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
+        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
+        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
+        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
+        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
+        return parcelItemService.getAll();
+    }
+
+    private List<Parcel> createParcel(){
+        List<ParcelItem> parcelItemList = createParcelItem();
+        float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
+        float price = (float) parcelItemList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        Parcel parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelService.save(parcelMapper.toDto(parcel));
+        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelService.save(parcelMapper.toDto(parcel));
+        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelService.save(parcelMapper.toDto(parcel));
+
+        return parcelService.getAll();
     }
 }

@@ -3,8 +3,6 @@ package com.opinta.mapper;
 import com.opinta.dto.ParcelDto;
 import com.opinta.entity.Parcel;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.springframework.stereotype.Service;
 
 @Service

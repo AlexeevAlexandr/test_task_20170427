@@ -27,8 +27,7 @@ public class Shipment {
     private BigDecimal price;
     private BigDecimal postPay;
     private String description;
-//    @ElementCollection(targetClass=Parcel.class, fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = Parcel.class, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = Parcel.class)
     private List<Parcel> parcelList;
 
     public Shipment(Client sender, Client recipient, DeliveryType deliveryType, BigDecimal price, BigDecimal postPay,

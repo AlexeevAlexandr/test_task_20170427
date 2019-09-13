@@ -20,11 +20,11 @@ public class Parcel {
     private float height;
     private BigDecimal declaredPrice;
     private BigDecimal price;
-//    @ElementCollection(targetClass=ParcelItem.class, fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = ParcelItem.class, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = ParcelItem.class)
     private List<ParcelItem> parcelItemList;
 
-    public Parcel(float weight, float length, float width, float height, BigDecimal declaredPrice, BigDecimal price, List<ParcelItem> parcelItemList) {
+    public Parcel(float weight, float length, float width, float height, BigDecimal declaredPrice, BigDecimal price,
+                  List<ParcelItem> parcelItemList) {
         this.weight = weight;
         this.length = length;
         this.width = width;

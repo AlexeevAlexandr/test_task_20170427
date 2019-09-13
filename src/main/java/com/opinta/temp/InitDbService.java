@@ -190,30 +190,31 @@ public class InitDbService {
         tariffGrids.forEach(tariffGridService::save);
     }
 
-    private List<ParcelItem> createParcelItem(){
-        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
-        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
-        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
-        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
-        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
-        parcelItemService.save(parcelItemMapper.toDto(parcelItem));
-        return parcelItemService.getAll();
-    }
-
     private List<Parcel> createParcel(){
         List<ParcelItem> parcelItemList = createParcelItem();
+        List<Parcel> parcelList = new ArrayList<>();
         float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
         float price = (float) parcelItemList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
         Parcel parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
                 new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelService.save(parcelMapper.toDto(parcel));
-        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+        parcelList.add(parcelMapper.toEntity(parcelService.save(parcelMapper.toDto(parcel))));
+        parcel = new Parcel(weight, 11f, 11f, 11f, new BigDecimal("11"),
                 new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelService.save(parcelMapper.toDto(parcel));
-        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+        parcelList.add(parcelMapper.toEntity(parcelService.save(parcelMapper.toDto(parcel))));
+        parcel = new Parcel(weight, 111f, 111f, 111f, new BigDecimal("111"),
                 new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelService.save(parcelMapper.toDto(parcel));
+        parcelList.add(parcelMapper.toEntity(parcelService.save(parcelMapper.toDto(parcel))));
+        return parcelList;
+    }
 
-        return parcelService.getAll();
+    private List<ParcelItem> createParcelItem(){
+        List<ParcelItem> parcelItemList = new ArrayList<>();
+        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));
+        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
+        parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));
+        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
+        parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));
+        return parcelItemList;
     }
 }

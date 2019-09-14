@@ -3,6 +3,8 @@ package com.opinta.controller;
 import com.opinta.dto.ShipmentDto;
 import com.opinta.service.PDFGeneratorService;
 import com.opinta.service.ShipmentService;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -66,7 +68,25 @@ public class ShipmentController {
 
     @PostMapping
     @ResponseStatus(OK)
-    public ShipmentDto createShipment(@RequestBody ShipmentDto shipmentDto) {
+    public ShipmentDto createShipment(@RequestBody String jsonString) {
+        org.json.simple.parser.JSONParser jsonParser = new org.json.simple.parser.JSONParser();
+        JSONObject jsonObjectShipment = new JSONObject();
+        JSONObject jsonObjectParcel = new JSONObject();
+        JSONObject jsonObjectParcelItem = new JSONObject();
+        try {
+            jsonObjectShipment = (JSONObject) jsonParser.parse(jsonString);
+            jsonObjectParcel = (JSONObject) jsonParser.parse(jsonObjectShipment.get("parcel").toString());
+            jsonObjectParcelItem = (JSONObject) jsonParser.parse(jsonObjectParcel.get("parcelItem").toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        System.out.println(jsonObjectShipment.toString());
+        System.out.println(jsonObjectParcel.toString());
+        System.out.println(jsonObjectParcelItem.toString());
+
+        ShipmentDto shipmentDto = new ShipmentDto();
         return shipmentService.save(shipmentDto);
     }
 

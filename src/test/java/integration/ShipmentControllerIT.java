@@ -32,8 +32,8 @@ public class ShipmentControllerIT extends BaseControllerIT {
 
     @Before
     public void setUp() throws Exception {
-        shipment = testHelper.createShipment();
-        shipmentId = (int) shipment.getId();
+//        shipment = testHelper.createShipment();
+//        shipmentId = (int) shipment.getId();
     }
 
     @After
@@ -94,6 +94,39 @@ public class ShipmentControllerIT extends BaseControllerIT {
 
         // delete
         testHelper.deleteShipment(createdShipment);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void createShipment() throws Exception {
+        // create
+        JSONObject shipmentJsonObject = testHelper.getJsonObjectFromFile("json/shipment.json");
+        JSONObject parcelJsonObject = testHelper.getJsonObjectFromFile("json/parcel.json");
+        JSONObject parcelItemJsonObject = testHelper.getJsonObjectFromFile("json/parcelItem.json");
+        shipmentJsonObject.put("senderId", (int) testHelper.createClient().getId());
+        shipmentJsonObject.put("recipientId", (int) testHelper.createClient().getId());
+        parcelJsonObject.put("parcelItem", parcelItemJsonObject);
+        shipmentJsonObject.put("parcel", parcelJsonObject);
+
+        int newShipmentId =
+                given().
+                        contentType("application/json;charset=UTF-8").
+                        body(shipmentJsonObject).
+                        when().
+                        post("/shipments").
+                        then().
+                        extract().
+                        path("id");
+
+        // check created data
+        Shipment createdShipment = shipmentService.getEntityById(newShipmentId);
+        ObjectMapper mapper = new ObjectMapper();
+        String actualJson = mapper.writeValueAsString(shipmentMapper.toDto(createdShipment));
+
+        JSONAssert.assertEquals(shipmentJsonObject.toString(), actualJson, false);
+
+        // delete
+//        testHelper.deleteShipment(createdShipment);
     }
 
     @Test

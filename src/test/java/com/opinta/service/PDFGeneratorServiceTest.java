@@ -1,7 +1,6 @@
 package com.opinta.service;
 
 import com.opinta.entity.*;
-import integration.helper.TestHelper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
@@ -30,10 +29,8 @@ public class PDFGeneratorServiceTest {
     private Shipment shipment;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         pdfGeneratorService = new PDFGeneratorServiceImpl(shipmentService);
-        TestHelper testHelper = new TestHelper();
-
         Address senderAddress = new Address("00001", "Ternopil", "Monastiriska",
                         "Monastiriska", "Sadova", "51", "");
         Address recipientAddress = new Address("00002", "Kiev", "", "Kiev",

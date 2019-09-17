@@ -1,8 +1,5 @@
 package com.opinta.dao;
 
-import com.opinta.entity.Counterparty;
-import java.util.List;
-
 import com.opinta.entity.Client;
 import com.opinta.entity.Counterparty;
 import org.hibernate.Criteria;
@@ -11,6 +8,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class ClientDaoImpl implements ClientDao {

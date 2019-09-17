@@ -4,14 +4,13 @@ import com.opinta.dto.*;
 import com.opinta.entity.*;
 import com.opinta.mapper.*;
 import com.opinta.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static com.opinta.entity.BarcodeStatus.RESERVED;
 import static com.opinta.entity.BarcodeStatus.USED;
@@ -42,11 +41,11 @@ public class InitDbService {
 
     @Autowired
     public InitDbService(
-            PostcodePoolService postcodePoolService, ClientService clientService, AddressService addressService,
-            ShipmentService shipmentService, CounterpartyService counterpartyService, PostOfficeService postOfficeService,
-            ShipmentTrackingDetailService shipmentTrackingDetailService, TariffGridService tariffGridService,
-            ParcelItemService parcelItemService, ParcelService parcelService, ClientMapper clientMapper,
-            AddressMapper addressMapper, PostcodePoolMapper postcodePoolMapper,
+            PostcodePoolService postcodePoolService, ClientService clientService,
+            AddressService addressService, ShipmentService shipmentService, CounterpartyService counterpartyService,
+            PostOfficeService postOfficeService, ShipmentTrackingDetailService shipmentTrackingDetailService,
+            TariffGridService tariffGridService, ParcelItemService parcelItemService, ParcelService parcelService,
+            ClientMapper clientMapper, AddressMapper addressMapper, PostcodePoolMapper postcodePoolMapper,
             BarcodeInnerNumberMapper barcodeInnerNumberMapper, ShipmentMapper shipmentMapper, ParcelMapper parcelMapper,
             PostOfficeMapper postOfficeMapper, CounterpartyMapper counterpartyMapper, ParcelItemMapper parcelItemMapper,
             ShipmentTrackingDetailMapper shipmentTrackingDetailMapper) {
@@ -101,7 +100,7 @@ public class InitDbService {
 
     }
 
-    private void createPostcodePoolWithBarcodeInnerNumber(){
+    private void createPostcodePoolWithBarcodeInnerNumber() {
         PostcodePoolDto postcodePoolDto = postcodePoolMapper.toDto(new PostcodePool("00001", false));
         final long postcodePoolId = postcodePoolService.save(postcodePoolDto).getId();
         List<BarcodeInnerNumberDto> barcodeInnerNumbers = new ArrayList<>();
@@ -112,7 +111,7 @@ public class InitDbService {
         postcodePoolService.addBarcodeInnerNumbers(postcodePoolId, barcodeInnerNumbers);
     }
 
-    private List<Client> createClientWthCounterParty(List<AddressDto> addressesSaved){
+    private List<Client> createClientWthCounterParty(List<AddressDto> addressesSaved) {
         PostcodePoolDto postcodePoolDto1 = postcodePoolMapper.toDto(new PostcodePool("00003", false));
         PostcodePoolDto postcodePoolDtoSaved1 = postcodePoolService.save(postcodePoolDto1);
         Counterparty counterparty = new Counterparty("Modna kasta", postcodePoolMapper.toEntity(postcodePoolDtoSaved1));
@@ -156,10 +155,11 @@ public class InitDbService {
         return postOfficeService.save(postOfficeMapper.toDto(postOffice));
     }
 
-    private List<ShipmentDto> createShipment(List<Client> clientsSaved){
+    private List<ShipmentDto> createShipment(List<Client> clientsSaved) {
         List<ShipmentDto> shipmentsSaved = new ArrayList<>();
         List<Parcel> parcelList = createParcel();
-        float price = (float) parcelList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        float price = (float) parcelList.stream()
+                .mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
         Shipment shipment = new Shipment(clientsSaved.get(0), clientsSaved.get(1), DeliveryType.W2W,
                 new BigDecimal(String.valueOf(price)), new BigDecimal("15"), parcelList);
         shipmentsSaved.add(shipmentService.save(shipmentMapper.toDto(shipment)));
@@ -214,7 +214,7 @@ public class InitDbService {
         tariffGrids.forEach(tariffGridService::save);
     }
 
-    private List<Parcel> createParcel(){
+    private List<Parcel> createParcel() {
         List<ParcelItem> parcelItemList = createParcelItem();
         List<Parcel> parcelList = new ArrayList<>();
         float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
@@ -231,9 +231,10 @@ public class InitDbService {
         return parcelList;
     }
 
-    private List<ParcelItem> createParcelItem(){
+    private List<ParcelItem> createParcelItem() {
         List<ParcelItem> parcelItemList = new ArrayList<>();
-        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        ParcelItem parcelItem =
+                new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
         parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));
         parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
         parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));

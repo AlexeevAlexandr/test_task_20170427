@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class TestHelper {
@@ -76,8 +77,8 @@ public class TestHelper {
     }
 
     public Address createAddress() {
-        Address address = new Address("00001", "Ternopil", "Monastiriska",
-                "Monastiriska", "Sadova", "51", "");
+        Address address = new Address("00001", "Ternopil", "Monastiriska", "Monastiriska",
+                "Sadova", "51", "");
         return addressService.saveEntity(address);
     }
 
@@ -105,7 +106,7 @@ public class TestHelper {
     }
 
     private File getFileFromResources(String path) {
-        return new File(getClass().getClassLoader().getResource(path).getFile());
+        return new File(Objects.requireNonNull(getClass().getClassLoader().getResource(path)).getFile());
     }
 
     private List<Parcel> getListParcel(){

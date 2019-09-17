@@ -31,18 +31,18 @@ public class ShipmentControllerIT extends BaseControllerIT {
     private TestHelper testHelper;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         shipment = testHelper.createShipment();
         shipmentId = (int) shipment.getId();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         testHelper.deleteShipment(shipment);
     }
 
     @Test
-    public void getShipments() throws Exception {
+    public void getShipments() {
         when().
                 get("/shipments").
         then().
@@ -50,7 +50,7 @@ public class ShipmentControllerIT extends BaseControllerIT {
     }
 
     @Test
-    public void getShipment() throws Exception {
+    public void getShipment() {
         when().
                 get("shipments/{id}", shipmentId).
         then().
@@ -59,7 +59,7 @@ public class ShipmentControllerIT extends BaseControllerIT {
     }
 
     @Test
-    public void getShipment_notFound() throws Exception {
+    public void getShipment_notFound() {
         when().
                 get("/shipments/{id}", shipmentId + 1).
         then().
@@ -123,7 +123,7 @@ public class ShipmentControllerIT extends BaseControllerIT {
     }
 
     @Test
-    public void deleteShipment() throws Exception {
+    public void deleteShipment() {
         when().
                 delete("/shipments/{id}", shipmentId).
         then().
@@ -131,7 +131,7 @@ public class ShipmentControllerIT extends BaseControllerIT {
     }
 
     @Test
-    public void deleteShipment_notFound() throws Exception {
+    public void deleteShipment_notFound() {
         when().
                 delete("/shipments/{id}", shipmentId + 1).
         then().

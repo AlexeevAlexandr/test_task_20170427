@@ -1,6 +1,5 @@
 package com.opinta.dao;
 
-import com.opinta.dto.ParcelDto;
 import com.opinta.entity.Parcel;
 import org.hibernate.Criteria;
 import org.hibernate.Session;

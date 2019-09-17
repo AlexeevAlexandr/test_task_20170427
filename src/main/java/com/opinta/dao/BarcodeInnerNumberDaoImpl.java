@@ -19,7 +19,6 @@ public class BarcodeInnerNumberDaoImpl implements BarcodeInnerNumberDao {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<BarcodeInnerNumber> getAll(long postcodeId) {
         // TODO think about getting directly table BarcodeInnerNumber
         Session session = sessionFactory.getCurrentSession();

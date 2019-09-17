@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -94,9 +95,9 @@ public class ShipmentController {
         }
         DeliveryType[] deliveryTypes = DeliveryType.values();
         Shipment shipment = new Shipment();
-        String stringDeliveryType = jsonNode.get("deliveryType").toString().replaceAll("\"", "");
+        String stringDeliveryType = Objects.requireNonNull(jsonNode).get("deliveryType").toString().replaceAll("\"", "");
         for (DeliveryType d : deliveryTypes) {
-            if (d.toString().equalsIgnoreCase(stringDeliveryType)){
+            if (d.toString().equalsIgnoreCase(stringDeliveryType)) {
                 shipment.setDeliveryType(d);
             }
         }

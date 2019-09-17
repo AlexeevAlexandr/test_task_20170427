@@ -18,7 +18,6 @@ import static com.opinta.entity.BarcodeStatus.USED;
 
 @Service
 public class InitDbService {
-    private BarcodeInnerNumberService barcodeInnerNumberService;
     private PostcodePoolService postcodePoolService;
     private ClientService clientService;
     private AddressService addressService;
@@ -43,16 +42,14 @@ public class InitDbService {
 
     @Autowired
     public InitDbService(
-            BarcodeInnerNumberService barcodeInnerNumberService, PostcodePoolService postcodePoolService,
-            ClientService clientService, AddressService addressService, ShipmentService shipmentService,
-            CounterpartyService counterpartyService, PostOfficeService postOfficeService,
+            PostcodePoolService postcodePoolService, ClientService clientService, AddressService addressService,
+            ShipmentService shipmentService, CounterpartyService counterpartyService, PostOfficeService postOfficeService,
             ShipmentTrackingDetailService shipmentTrackingDetailService, TariffGridService tariffGridService,
-            ParcelItemService parcelItemService, ParcelService parcelService,
-            ClientMapper clientMapper, AddressMapper addressMapper, PostcodePoolMapper postcodePoolMapper,
+            ParcelItemService parcelItemService, ParcelService parcelService, ClientMapper clientMapper,
+            AddressMapper addressMapper, PostcodePoolMapper postcodePoolMapper,
             BarcodeInnerNumberMapper barcodeInnerNumberMapper, ShipmentMapper shipmentMapper, ParcelMapper parcelMapper,
             PostOfficeMapper postOfficeMapper, CounterpartyMapper counterpartyMapper, ParcelItemMapper parcelItemMapper,
             ShipmentTrackingDetailMapper shipmentTrackingDetailMapper) {
-        this.barcodeInnerNumberService = barcodeInnerNumberService;
         this.postcodePoolService = postcodePoolService;
         this.clientService = clientService;
         this.addressService = addressService;
@@ -85,28 +82,40 @@ public class InitDbService {
         populateTariffGrid();
 
         // create PostcodePool with BarcodeInnerNumber
+        createPostcodePoolWithBarcodeInnerNumber();
+
+        // create Address
+        List<AddressDto> addressesSaved = createAddress();
+
+        // create Client with CounterParty
+        List<Client> clientsSaved = createClientWthCounterParty(addressesSaved);
+
+        // create Shipment
+        List<ShipmentDto> shipmentsSaved = createShipment(clientsSaved);
+
+        // create PostOffice
+        PostOfficeDto postOfficeSaved = createPostOffice(addressesSaved);
+
+        // create ShipmentTrackingDetail
+        createShipmentTrackingDetail(postOfficeSaved, shipmentsSaved);
+
+    }
+
+    private void createPostcodePoolWithBarcodeInnerNumber(){
         PostcodePoolDto postcodePoolDto = postcodePoolMapper.toDto(new PostcodePool("00001", false));
         final long postcodePoolId = postcodePoolService.save(postcodePoolDto).getId();
-
         List<BarcodeInnerNumberDto> barcodeInnerNumbers = new ArrayList<>();
         barcodeInnerNumbers.add(barcodeInnerNumberMapper.toDto(new BarcodeInnerNumber("0000001", USED)));
         barcodeInnerNumbers.add(barcodeInnerNumberMapper.toDto(new BarcodeInnerNumber("0000002", RESERVED)));
         barcodeInnerNumbers.add(barcodeInnerNumberMapper.toDto(new BarcodeInnerNumber("0000003", RESERVED)));
 
         postcodePoolService.addBarcodeInnerNumbers(postcodePoolId, barcodeInnerNumbers);
+    }
 
-        // create Address
-        List<AddressDto> addresses = new ArrayList<>();
-        List<AddressDto> addressesSaved = new ArrayList<>();
-        addresses.add(addressMapper.toDto(new Address("00001", "Ternopil", "Monastiriska", "Monastiriska", "Sadova", "51", "")));
-        addresses.add(addressMapper.toDto(new Address("00002", "Kiev", "", "Kiev", "Khreschatik", "121", "37")));
-        addresses.forEach((AddressDto addressDto) -> addressesSaved.add(addressService.save(addressDto)));
-
-        // create Client with Counterparty
+    private List<Client> createClientWthCounterParty(List<AddressDto> addressesSaved){
         PostcodePoolDto postcodePoolDto1 = postcodePoolMapper.toDto(new PostcodePool("00003", false));
         PostcodePoolDto postcodePoolDtoSaved1 = postcodePoolService.save(postcodePoolDto1);
-        Counterparty counterparty = new Counterparty("Modna kasta",
-                postcodePoolMapper.toEntity(postcodePoolDtoSaved1));
+        Counterparty counterparty = new Counterparty("Modna kasta", postcodePoolMapper.toEntity(postcodePoolDtoSaved1));
         CounterpartyDto counterpartyDto = this.counterpartyMapper.toDto(counterparty);
         counterpartyDto = counterpartyService.save(counterpartyDto);
         counterparty = counterpartyMapper.toEntity(counterpartyDto);
@@ -117,10 +126,37 @@ public class InitDbService {
         clients.add(new Client("Petrov PP", "002",
                 addressMapper.toEntity(addressesSaved.get(1)), counterparty));
         clients.forEach((Client client) ->
-            clientsSaved.add(this.clientMapper.toEntity(clientService.save(this.clientMapper.toDto(client))))
-        );
+                clientsSaved.add(this.clientMapper.toEntity(clientService.save(this.clientMapper.toDto(client)))));
+        return clientsSaved;
+    }
 
-        // create Shipment
+    private List<AddressDto> createAddress(){
+        List<AddressDto> addresses = new ArrayList<>();
+        List<AddressDto> addressesSaved = new ArrayList<>();
+        addresses.add(addressMapper.toDto(new Address("00001", "Ternopil", "Monastiriska",
+                "Monastiriska", "Sadova", "51", "")));
+        addresses.add(addressMapper.toDto(new Address("00002", "Kiev", "", "Kiev",
+                "Khreschatik", "121", "37")));
+        addresses.forEach((AddressDto addressDto) -> addressesSaved.add(addressService.save(addressDto)));
+        return addressesSaved;
+    }
+
+    private void createShipmentTrackingDetail(PostOfficeDto postOfficeSaved, List<ShipmentDto> shipmentsSaved){
+        ShipmentTrackingDetail shipmentTrackingDetail =
+                new ShipmentTrackingDetail(shipmentMapper.toEntity(shipmentsSaved.get(0)),
+                        postOfficeMapper.toEntity(postOfficeSaved), ShipmentStatus.PREPARED, new Date());
+        shipmentTrackingDetailService.save(shipmentTrackingDetailMapper.toDto(shipmentTrackingDetail));
+    }
+
+    private PostOfficeDto createPostOffice(List<AddressDto> addressesSaved){
+        PostcodePoolDto postcodePoolDto2 = postcodePoolMapper.toDto(new PostcodePool("00002", false));
+        PostcodePoolDto postcodePoolDtoSaved = postcodePoolService.save(postcodePoolDto2);
+        PostOffice postOffice = new PostOffice("Lviv post office", addressMapper.toEntity(addressesSaved.get(0)),
+                postcodePoolMapper.toEntity(postcodePoolDtoSaved));
+        return postOfficeService.save(postOfficeMapper.toDto(postOffice));
+    }
+
+    private List<ShipmentDto> createShipment(List<Client> clientsSaved){
         List<ShipmentDto> shipmentsSaved = new ArrayList<>();
         List<Parcel> parcelList = createParcel();
         float price = (float) parcelList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
@@ -133,19 +169,7 @@ public class InitDbService {
         shipment = new Shipment(clientsSaved.get(1), clientsSaved.get(0), DeliveryType.D2D,
                 new BigDecimal(String.valueOf(price)), new BigDecimal("13.5"), parcelList);
         shipmentsSaved.add(shipmentService.save(shipmentMapper.toDto(shipment)));
-
-        // create PostOffice
-        PostcodePoolDto postcodePoolDto2 = postcodePoolMapper.toDto(new PostcodePool("00002", false));
-        PostcodePoolDto postcodePoolDtoSaved = postcodePoolService.save(postcodePoolDto2);
-        PostOffice postOffice = new PostOffice("Lviv post office", addressMapper.toEntity(addressesSaved.get(0)),
-                postcodePoolMapper.toEntity(postcodePoolDtoSaved));
-        PostOfficeDto postOfficeSaved = postOfficeService.save(postOfficeMapper.toDto(postOffice));
-
-        // create ShipmentTrackingDetail
-        ShipmentTrackingDetail shipmentTrackingDetail =
-                new ShipmentTrackingDetail(shipmentMapper.toEntity(shipmentsSaved.get(0)),
-                        postOfficeMapper.toEntity(postOfficeSaved), ShipmentStatus.PREPARED, new Date());
-        shipmentTrackingDetailService.save(shipmentTrackingDetailMapper.toDto(shipmentTrackingDetail));
+        return shipmentsSaved;
     }
 
     private void populateTariffGrid() {

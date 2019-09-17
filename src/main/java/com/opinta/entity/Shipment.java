@@ -2,6 +2,8 @@ package com.opinta.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -28,6 +30,7 @@ public class Shipment {
     private BigDecimal postPay;
     private String description;
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = Parcel.class)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Parcel> parcelList;
 
     public Shipment(Client sender, Client recipient, DeliveryType deliveryType, BigDecimal price, BigDecimal postPay,

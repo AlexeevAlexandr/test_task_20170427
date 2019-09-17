@@ -84,19 +84,15 @@ public class ShipmentControllerIT extends BaseControllerIT {
                         path("id");
 
         // check created data
-        Shipment createdShipment = shipmentService.getEntityById(newShipmentId);
+        ShipmentDto createdShipment = shipmentMapper.toDto(shipmentService.getEntityById(newShipmentId));
         ObjectMapper mapper = new ObjectMapper();
-        String actualJson = mapper.writeValueAsString(createdShipment);
-        String expected = mapper.writeValueAsString(shipment);
+        String actual = mapper.writeValueAsString(shipmentJsonObject);
+        String expected = mapper.writeValueAsString(createdShipment);
 
-        System.out.println("AAAAAAAAAAAAAAAAAAAA " + newShipmentId);
-        System.out.println("AAAAAAAAAAAAAAAAAAAA " + expected);
-        System.out.println("AAAAAAAAAAAAAAAAAAAA " + actualJson);
-
-        JSONAssert.assertEquals(expected, actualJson, false);
+        JSONAssert.assertEquals(actual, expected, false);
 
         // delete
-        testHelper.deleteShipment(createdShipment);
+        testHelper.deleteShipment(shipmentMapper.toEntity(createdShipment));
     }
 
     @Test

@@ -2,8 +2,7 @@
   "senderId": [],
   "recipientId": [],
   "deliveryType": "D2W",
-  "declaredPrice": 23.5,
-  "price": [],
+  "price": 39,
   "postPay": 71,
   "description": null
 }

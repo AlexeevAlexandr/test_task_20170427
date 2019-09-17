@@ -2,7 +2,6 @@ package com.opinta.service;
 
 import com.opinta.dao.ParcelItemDao;
 import com.opinta.dto.ParcelItemDto;
-import com.opinta.entity.Parcel;
 import com.opinta.entity.ParcelItem;
 import com.opinta.mapper.ParcelItemMapper;
 import lombok.extern.slf4j.Slf4j;

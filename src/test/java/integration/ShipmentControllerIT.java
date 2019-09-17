@@ -5,13 +5,13 @@ import com.opinta.dto.ShipmentDto;
 import com.opinta.entity.Shipment;
 import com.opinta.mapper.ShipmentMapper;
 import com.opinta.service.ShipmentService;
+import integration.helper.TestHelper;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
-import integration.helper.TestHelper;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
@@ -32,8 +32,8 @@ public class ShipmentControllerIT extends BaseControllerIT {
 
     @Before
     public void setUp() throws Exception {
-//        shipment = testHelper.createShipment();
-//        shipmentId = (int) shipment.getId();
+        shipment = testHelper.createShipment();
+        shipmentId = (int) shipment.getId();
     }
 
     @After
@@ -68,46 +68,11 @@ public class ShipmentControllerIT extends BaseControllerIT {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void createClient() throws Exception {
-        // create
-        JSONObject jsonObject = testHelper.getJsonObjectFromFile("json/shipment.json");
-        jsonObject.put("senderId", (int) testHelper.createClient().getId());
-        jsonObject.put("recipientId", (int) testHelper.createClient().getId());
-        String expectedJson = jsonObject.toString();
-
-        int newShipmentId =
-                given().
-                        contentType("application/json;charset=UTF-8").
-                        body(expectedJson).
-                when().
-                        post("/shipments").
-                then().
-                        extract().
-                        path("id");
-
-        // check created data
-        Shipment createdShipment = shipmentService.getEntityById(newShipmentId);
-        ObjectMapper mapper = new ObjectMapper();
-        String actualJson = mapper.writeValueAsString(shipmentMapper.toDto(createdShipment));
-
-        JSONAssert.assertEquals(expectedJson, actualJson, false);
-
-        // delete
-        testHelper.deleteShipment(createdShipment);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
     public void createShipment() throws Exception {
         // create
         JSONObject shipmentJsonObject = testHelper.getJsonObjectFromFile("json/shipment.json");
-        JSONObject parcelJsonObject = testHelper.getJsonObjectFromFile("json/parcel.json");
-        JSONObject parcelItemJsonObject = testHelper.getJsonObjectFromFile("json/parcelItem.json");
         shipmentJsonObject.put("senderId", (int) testHelper.createClient().getId());
         shipmentJsonObject.put("recipientId", (int) testHelper.createClient().getId());
-        parcelJsonObject.put("parcelItem", parcelItemJsonObject);
-        shipmentJsonObject.put("parcel", parcelJsonObject);
-
         int newShipmentId =
                 given().
                         contentType("application/json;charset=UTF-8").
@@ -121,12 +86,17 @@ public class ShipmentControllerIT extends BaseControllerIT {
         // check created data
         Shipment createdShipment = shipmentService.getEntityById(newShipmentId);
         ObjectMapper mapper = new ObjectMapper();
-        String actualJson = mapper.writeValueAsString(shipmentMapper.toDto(createdShipment));
+        String actualJson = mapper.writeValueAsString(createdShipment);
+        String expected = mapper.writeValueAsString(shipment);
 
-        JSONAssert.assertEquals(shipmentJsonObject.toString(), actualJson, false);
+        System.out.println("AAAAAAAAAAAAAAAAAAAA " + newShipmentId);
+        System.out.println("AAAAAAAAAAAAAAAAAAAA " + expected);
+        System.out.println("AAAAAAAAAAAAAAAAAAAA " + actualJson);
+
+        JSONAssert.assertEquals(expected, actualJson, false);
 
         // delete
-//        testHelper.deleteShipment(createdShipment);
+        testHelper.deleteShipment(createdShipment);
     }
 
     @Test

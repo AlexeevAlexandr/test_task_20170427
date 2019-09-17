@@ -4,7 +4,6 @@ import com.opinta.entity.ParcelItem;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.ElementCollection;
 import java.math.BigDecimal;
 import java.util.List;
 

@@ -1,6 +1,8 @@
 package integration.helper;
 
 import com.opinta.entity.*;
+import com.opinta.mapper.ParcelItemMapper;
+import com.opinta.mapper.ParcelMapper;
 import com.opinta.service.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,7 +30,15 @@ public class TestHelper {
     @Autowired
     private ShipmentService shipmentService;
     @Autowired
+    private ParcelService parcelService;
+    @Autowired
+    private ParcelItemService parcelItemService;
+    @Autowired
     private PostOfficeService postOfficeService;
+    @Autowired
+    private ParcelMapper parcelMapper;
+    @Autowired
+    private ParcelItemMapper parcelItemMapper;
 
     public PostOffice createPostOffice() {
         PostOffice postOffice = new PostOffice("Lviv post office", createAddress(), createPostcodePool());
@@ -98,31 +108,21 @@ public class TestHelper {
         return new File(getClass().getClassLoader().getResource(path).getFile());
     }
 
-    private List<ParcelItem> getListParcelItem(){
-        List<ParcelItem> parcelItemList = new ArrayList<>();
-        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
-        parcelItemList.add(parcelItem);
-        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
-        parcelItemList.add(parcelItem);
-        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
-        parcelItemList.add(parcelItem);
-        return parcelItemList;
-    }
-
-    public List<Parcel> getListParcel(){
+    private List<Parcel> getListParcel(){
+        List<ParcelItem> parcelItemList = createParcelItem();
         List<Parcel> parcelList = new ArrayList<>();
-        List<ParcelItem> parcelItemList = getListParcelItem();
         float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
         float price = (float) parcelItemList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
         Parcel parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
                 new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelList.add(parcel);
-        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
-                new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelList.add(parcel);
-        parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
-                new BigDecimal(String.valueOf(price)), parcelItemList);
-        parcelList.add(parcel);
+        parcelList.add(parcelMapper.toEntity(parcelService.save(parcelMapper.toDto(parcel))));
         return parcelList;
+    }
+
+    private List<ParcelItem> createParcelItem(){
+        List<ParcelItem> parcelItemList = new ArrayList<>();
+        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        parcelItemList.add(parcelItemMapper.toEntity(parcelItemService.save(parcelItemMapper.toDto(parcelItem))));
+        return parcelItemList;
     }
 }

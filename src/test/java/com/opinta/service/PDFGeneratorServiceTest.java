@@ -13,6 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +42,7 @@ public class PDFGeneratorServiceTest {
                 new PostcodePool("00003", false));
         Client sender = new Client("FOP Ivanov", "001", senderAddress, counterparty);
         Client recipient = new Client("Petrov PP", "002", recipientAddress, counterparty);
-        List<Parcel> parcelList = testHelper.getListParcel();
+        List<Parcel> parcelList = getListParcel();
         float price = (float) parcelList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
         shipment = new Shipment(sender, recipient, DeliveryType.W2W, new BigDecimal(String.valueOf(price)),
                 new BigDecimal("15.25"), parcelList);
@@ -82,7 +83,7 @@ public class PDFGeneratorServiceTest {
         assertEquals("Expected mass to be 24.0", field.getValue(), "24.0");
 
         field = (PDTextField) acroForm.getField("value");
-        assertEquals("Expected value to be 3.0", field.getValue(), "3.0");
+        assertEquals("Expected value to be 123.0", field.getValue(), "123.0");
 
         field = (PDTextField) acroForm.getField("sendingCost");
         assertEquals("Expected sendingCost to be 27.0", field.getValue(), "27.0");
@@ -133,5 +134,33 @@ public class PDFGeneratorServiceTest {
                 .load(postpayForm)
                 .getDocumentCatalog()
                 .getAcroForm();
+    }
+
+    public List<Parcel> getListParcel(){
+        List<ParcelItem> parcelItemList = createParcelItem();
+        List<Parcel> parcelList = new ArrayList<>();
+        float weight = (float) parcelItemList.stream().mapToDouble(ParcelItem::getWeight).sum();
+        float price = (float) parcelItemList.stream().mapToDouble(e -> Float.parseFloat(e.getPrice().toString())).sum();
+        Parcel parcel = new Parcel(weight, 1f, 1f, 1f, new BigDecimal("1"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        parcel = new Parcel(weight, 11f, 11f, 11f, new BigDecimal("11"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        parcel = new Parcel(weight, 111f, 111f, 111f, new BigDecimal("111"),
+                new BigDecimal(String.valueOf(price)), parcelItemList);
+        parcelList.add(parcel);
+        return parcelList;
+    }
+
+    private List<ParcelItem> createParcelItem(){
+        List<ParcelItem> parcelItemList = new ArrayList<>();
+        ParcelItem parcelItem = new ParcelItem("Laptop", 1f, 2f, new BigDecimal("3"));
+        parcelItemList.add(parcelItem);
+        parcelItem = new ParcelItem("Phone", 2f, 1f, new BigDecimal("2"));
+        parcelItemList.add(parcelItem);
+        parcelItem = new ParcelItem("TV", 3f, 5f, new BigDecimal("4"));
+        parcelItemList.add(parcelItem);
+        return parcelItemList;
     }
 }
